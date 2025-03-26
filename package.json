@@ -1,0 +1,22 @@
+{
+  "name": "cse341-project02",
+  "version": "1.0.0",
+  "description": "cse-341 school project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mserdarozden/cse341-project02.git"
+  },
+  "author": "Serdar Ozden",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mserdarozden/cse341-project02/issues"
+  },
+  "homepage": "https://github.com/mserdarozden/cse341-project02#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
