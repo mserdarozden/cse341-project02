@@ -15,14 +15,14 @@ const getAll = async (req, res) => {
     res.status(200).json(students);
   } catch (err) {
     console.error("Error fetching students:", err);
-    res.status(500).json({ message: "Failed to fetch students", error: err });
+    res.status(500).json({ message: "Failed to fetch students", error: err.message });
   }
 };
 
 const getSingle = async (req, res) => {
   //#swagger.tags = ['Students']
   if (!ObjectId.isValid(req.params.id)) {
-    res.status(400).json("Must use a valid student id to find a contact.");
+    return res.status(400).json({ message: "Invalid student ID format." });
   }
   try {
     const studentId = new ObjectId(req.params.id);
@@ -40,92 +40,99 @@ const getSingle = async (req, res) => {
     }
   } catch (err) {
     console.error("Error fetching student:", err);
-    res.status(500).json({ message: "Failed to fetch student", error: err });
+    res.status(500).json({ message: "Failed to fetch student", error: err.message });
   }
 };
 
 const createStudent = async (req, res) => {
   //#swagger.tags = ['Students']
-  const student = {
-    first_name: req.body.firstName,
-    last_name: req.body.lastName,
-    email: req.body.email,
-    birthdate: req.body.birthdate,
-    address: req.body.address,
-    phone_number: req.body.phoneNumber,
-    enrollment_year: req.body.enrollmentYear,
-    major: req.body.major,
-    gpa: req.body.gpa,
-  };
+  try {
+    const student = {
+      first_name: req.body.firstName,
+      last_name: req.body.lastName,
+      email: req.body.email,
+      birthdate: req.body.birthdate,
+      address: req.body.address,
+      phone_number: req.body.phoneNumber,
+      enrollment_year: req.body.enrollmentYear,
+      major: req.body.major,
+      gpa: req.body.gpa,
+    };
 
-  const response = await mongodb
-    .getDatabase()
-    .db()
-    .collection("students")
-    .insertOne(student);
-  if (response.acknowledged) {
-    res.status(204).send();
-  } else {
-    res
-      .status(500)
-      .json(
-        response.error || "Some error occurred while updating the student."
-      );
+    const response = await mongodb
+      .getDatabase()
+      .db()
+      .collection("students")
+      .insertOne(student);
+    if (response.acknowledged) {
+      res.status(201).json({ message: "Student created successfully", id: response.insertedId });
+    } else {
+      res.status(500).json({ message: "Failed to create student" });
+    }
+  } catch (err) {
+    console.error("Error creating student:", err);
+    res.status(500).json({ message: "Failed to create student", error: err.message });
   }
 };
 
 const updateStudent = async (req, res) => {
-    //#swagger.tags = ['Students']
+  //#swagger.tags = ['Students']
   if (!ObjectId.isValid(req.params.id)) {
-    res.status(400).json("Must use a valid contact id to find a contact.");
+    return res.status(400).json({ message: "Invalid student ID format." });
   }
 
-  const studentId = new ObjectId(req.params.id);
-  const student = {
-    first_name: req.body.firstName,
-    last_name: req.body.lastName,
-    email: req.body.email,
-    birthdate: req.body.birthdate,
-    address: req.body.address,
-    phone_number: req.body.phoneNumber,
-    enrollment_year: req.body.enrollmentYear,
-    major: req.body.major,
-    gpa: req.body.gpa,
-  };
+  try {
+    const studentId = new ObjectId(req.params.id);
+    const student = {
+      first_name: req.body.firstName,
+      last_name: req.body.lastName,
+      email: req.body.email,
+      birthdate: req.body.birthdate,
+      address: req.body.address,
+      phone_number: req.body.phoneNumber,
+      enrollment_year: req.body.enrollmentYear,
+      major: req.body.major,
+      gpa: req.body.gpa,
+    };
 
-  const response = await mongodb
-    .getDatabase()
-    .db()
-    .collection("students")
-    .replaceOne({ _id: studentId }, student);
-  if (response.modifiedCount > 0) {
-    res.status(204).send();
-  } else {
-    res
-      .status(500)
-      .json(
-        response.error || "Some error occurred while updating the student."
-      );
+    const response = await mongodb
+      .getDatabase()
+      .db()
+      .collection("students")
+      .replaceOne({ _id: studentId }, student);
+    if (response.modifiedCount > 0) {
+      res.status(200).json({ message: "Student updated successfully" });
+    } else {
+      res.status(404).json({ message: "Student not found or no changes made" });
+    }
+  } catch (err) {
+    console.error("Error updating student:", err);
+    res.status(500).json({ message: "Failed to update student", error: err.message });
   }
 };
 
 const deleteStudent = async (req, res) => {
-    //#swagger.tags = ['Students']
-  const studentId = new ObjectId(req.params.id);
-  const response = await mongodb
-    .getDatabase()
-    .db()
-    .collection("students")
-    .deleteOne({ _id: studentId });
+  //#swagger.tags = ['Students']
+  if (!ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: "Invalid student ID format." });
+  }
 
-  if (response.deletedCount > 0) {
-    res.status(204).send();
-  } else {
-    res
-      .status(500)
-      .json(
-        response.error || "Some error occurred while deleting the student."
-      );
+  try {
+    const studentId = new ObjectId(req.params.id);
+    const response = await mongodb
+      .getDatabase()
+      .db()
+      .collection("students")
+      .deleteOne({ _id: studentId });
+
+    if (response.deletedCount > 0) {
+      res.status(200).json({ message: "Student deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Student not found" });
+    }
+  } catch (err) {
+    console.error("Error deleting student:", err);
+    res.status(500).json({ message: "Failed to delete student", error: err.message });
   }
 };
 
@@ -134,5 +141,5 @@ module.exports = {
   getSingle,
   createStudent,
   updateStudent,
-  deleteStudent
+  deleteStudent,
 };
